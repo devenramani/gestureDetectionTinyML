@@ -59,7 +59,7 @@ grid_z = interp(zz) # interpolated image
 plt.rcParams.update({'font.size':16})
 fig_dims = (10,9) # figure size
 fig,ax = plt.subplots(figsize=fig_dims) # start figure
-im1 = ax.imshow(grid_z,vmin=20,vmax=30,cmap=plt.cm.RdBu_r) # plot image, with temperature bounds
+im1 = ax.imshow(grid_z,vmin=25,vmax=30,cmap=plt.cm.RdBu_r) # plot image, with temperature bounds
 cbar = fig.colorbar(im1,fraction=0.0475,pad=0.03) # colorbar
 cbar.set_label('Temperature [C]',labelpad=10) # temp. label
 fig.canvas.draw() # draw figure
@@ -174,7 +174,7 @@ while True:
     fig.canvas.flush_events() # for real-time plot
 
     #canvas to cv2 image
-    img = np.fromstring(fig.canvas.tostring_rgb(),dtype=np.uint8,sep='')
+    img = np.frombuffer(fig.canvas.tostring_rgb(),dtype=np.uint8)
     img = img.reshape(fig.canvas.get_width_height()[::-1]+(3,))
     img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
 
@@ -200,8 +200,8 @@ while True:
 
     # Retrieve detection results
     boxes = interpreter.get_tensor(output_details[0]['index'])[0] # Bounding box coordinates of detected objects
-    classes = interpreter.get_tensor(output_details[1]['index'])[0] # Class index of detected objects
-    scores = interpreter.get_tensor(output_details[2]['index'])[0] # Confidence of detected objects
+    classes = interpreter.get_tensor(output_details[0]['index'])[0] # Class index of detected objects
+    scores = interpreter.get_tensor(output_details[0]['index'])[0] # Confidence of detected objects
     #num = interpreter.get_tensor(output_details[3]['index'])[0]  # Total number of detected objects (inaccurate and not needed)
 
     # Loop over all detections and draw detection box if confidence is above minimum threshold
