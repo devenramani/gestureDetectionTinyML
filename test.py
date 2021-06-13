@@ -1,12 +1,8 @@
-import sys
-import bluetooth
-
-devices = discover_devices()
-devices
-
-bd_addr = '[MAC-address for HC-06]'
-port = 1
-sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-sock.connect((bd_addr,port))
-
-sock.send("2".encode())
+import socket
+ 
+serverMACAddress = '0d:e8:69:46:01:98'
+port = 4
+s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+s.connect((serverMACAddress,port))
+s.send(bytes("A"))
+s.close()
