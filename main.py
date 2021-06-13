@@ -81,7 +81,7 @@ cbar.set_label('Temperature [C]',labelpad=10) # temp. label
 fig.canvas.draw() # draw figure
 
 ax_bgnd = fig.canvas.copy_from_bbox(ax.bbox) # background for speeding up runs
-fig.show() # show figure
+#fig.show() # show figure
 #
 #####################################
 # Plot AMG8833 temps in real-time
@@ -191,17 +191,28 @@ while True:
         continue
     
     T_thermistor = sensor.read_thermistor() # read thermistor temp
-    fig.canvas.restore_region(ax_bgnd) # restore background (speeds up run)
+    # fig.canvas.restore_region(ax_bgnd) # restore background (speeds up run)
     new_z = interp(np.reshape(pixels,pix_res)) # interpolated image
+    
+    im1.set_data(new_z) # update plot with new interpolated temps
+    ax.draw_artist(im1) # draw image again
+    fig.canvas.blit(ax.bbox) # blitting - for speeding up run
+    fig.canvas.flush_events() # for real-time plot
 
-     # Start timer (for calculating frame rate)
+    img = np.fromstring(fig.canvas.tostring_rgb(),dtype=np.uint8,sep='')
+    img = img.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+
+    img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
+
+    # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
 
     # Grab frame from video stream
-    frame1 = new_z
+    frame1 = img
+    frame2 = frame1.copy()
 
     # Acquire frame and resize to expected shape [1xHxWx3]
-    frame = frame1.copy()
+    frame = np.array(frame2, dtype=np.uint8)
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame_resized = cv2.resize(frame_rgb, (width, height))
     input_data = np.expand_dims(frame_resized, axis=0)
@@ -241,6 +252,8 @@ while True:
             cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
             cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
+
+
     # Draw framerate in corner of frame
     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
@@ -256,10 +269,7 @@ while True:
     if cv2.waitKey(1) == ord('q'):
         break
 
-    im1.set_data(new_z) # update plot with new interpolated temps
-    ax.draw_artist(im1) # draw image again
-    fig.canvas.blit(ax.bbox) # blitting - for speeding up run
-    fig.canvas.flush_events() # for real-time plot
+
 
 
     
