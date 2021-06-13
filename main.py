@@ -13,6 +13,7 @@ import sys
 import time
 from threading import Thread
 import importlib.util
+import socket
 
 
 # Initialization of Sensor
@@ -240,6 +241,14 @@ while True:
     # Press 'q' to quit
     if cv2.waitKey(1) == ord('q'):
         break
+
+    #send detected class via BLE
+    # serverMACAddress = '0d:e8:69:46:01:98'
+    # port = 4
+    # s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+    # s.connect((serverMACAddress,port))
+    # s.send(bytes("A"))
+    # s.close()
 
 
 
