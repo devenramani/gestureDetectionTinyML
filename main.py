@@ -1,12 +1,3 @@
-#######################################################
-# Thermal camera Plotter with AMG8833 Infrared Array
-# --- with interpolation routines for smoothing image
-#
-# by Joshua Hrisko
-#    Copyright 2021 | Maker Portal LLC
-#
-#######################################################
-#
 import time,sys
 sys.path.append('../')
 # load AMG8833 module
@@ -23,11 +14,8 @@ import time
 from threading import Thread
 import importlib.util
 
-#
-#####################################
+
 # Initialization of Sensor
-#####################################
-#
 t0 = time.time()
 sensor = []
 while (time.time()-t0)<1: # wait 1sec for sensor to start
@@ -44,13 +32,12 @@ time.sleep(0.1) # wait for sensor to settle
 if sensor==[]:
     print("No AMG8833 Found - Check Your Wiring")
     sys.exit(); # exit the app if AMG88xx is not found 
-#
-#####################################
-# Interpolation Properties 
-#####################################
-#
+
+# Interpolation Properties
 # original resolution
 pix_res = (8,8) # pixel resolution
+pix_to_read = 64 # read all 64 pixels
+
 xx,yy = (np.linspace(0,pix_res[0],pix_res[0]),
                     np.linspace(0,pix_res[1],pix_res[1]))
 zz = np.zeros(pix_res) # set array with zeros first
@@ -66,11 +53,9 @@ def interp(z_var):
     f = interpolate.interp2d(xx,yy,z_var,kind='cubic')
     return f(grid_x,grid_y)
 grid_z = interp(zz) # interpolated image
-#
-#####################################
+
 # Start and Format Figure 
-#####################################
-#ras
+
 plt.rcParams.update({'font.size':16})
 fig_dims = (10,9) # figure size
 fig,ax = plt.subplots(figsize=fig_dims) # start figure
@@ -81,16 +66,8 @@ fig.canvas.draw() # draw figure
 
 ax_bgnd = fig.canvas.copy_from_bbox(ax.bbox) # background for speeding up runs
 #fig.show() # show figure
-#
-#####################################
-# Plot AMG8833 temps in real-time
-#####################################
-#
-pix_to_read = 64 # read all 64 pixels
-
 
 ## TFLite
-
 # Define and parse input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--modeldir', help='Folder the .tflite file is located in',
@@ -182,8 +159,6 @@ freq = cv2.getTickFrequency()
 
 time.sleep(1)
 
-
-
 while True:
     status,pixels = sensor.read_temp(pix_to_read) # read pixels with status
     if status: # if error in pixel, re-enter loop and try again
@@ -198,9 +173,9 @@ while True:
     fig.canvas.blit(ax.bbox) # blitting - for speeding up run
     fig.canvas.flush_events() # for real-time plot
 
+    #canvas to cv2 image
     img = np.fromstring(fig.canvas.tostring_rgb(),dtype=np.uint8,sep='')
     img = img.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-
     img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
 
     # Start timer (for calculating frame rate)
@@ -208,10 +183,9 @@ while True:
 
     # Grab frame from video stream
     frame1 = img
-    frame2 = frame1.copy()
 
     # Acquire frame and resize to expected shape [1xHxWx3]
-    frame = np.array(frame2, dtype=np.uint8)
+    frame = np.array(frame1, dtype=np.uint8)
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame_resized = cv2.resize(frame_rgb, (width, height))
     input_data = np.expand_dims(frame_resized, axis=0)
@@ -250,7 +224,6 @@ while True:
             label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
             cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
             cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
-
 
 
     # Draw framerate in corner of frame
