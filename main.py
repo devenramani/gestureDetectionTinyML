@@ -74,7 +74,6 @@ grid_z = interp(zz) # interpolated image
 plt.rcParams.update({'font.size':16})
 fig_dims = (10,9) # figure size
 fig,ax = plt.subplots(figsize=fig_dims) # start figure
-fig.canvas.set_window_title('AMG8833 Image Interpolation')
 im1 = ax.imshow(grid_z,vmin=20,vmax=30,cmap=plt.cm.RdBu_r) # plot image, with temperature bounds
 cbar = fig.colorbar(im1,fraction=0.0475,pad=0.03) # colorbar
 cbar.set_label('Temperature [C]',labelpad=10) # temp. label
